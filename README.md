@@ -28,9 +28,7 @@ client/
 │ ├─ login.jsx
 │ └─ index.js
 
-yaml
-Copy
-Edit
+
 
 ---
 
