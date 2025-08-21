@@ -89,8 +89,7 @@ POST /register: Register a new user
 Request Body:
 
 json
-Copy
-Edit
+
 {
   "name": "John Doe",
   "email": "john@example.com",
@@ -103,6 +102,5 @@ POST /login: (To be implemented) Login endpoint for users
 Notes
 Ensure that the backend User.js file is located in server/models/User.js.
 
-Adjust require paths if your file structure differs.
-.
+
 
