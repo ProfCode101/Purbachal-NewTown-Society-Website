@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import "./Auth.css"; 
 function Login() {
   const [formData, setFormData] = useState({
     email: "",
@@ -19,66 +19,45 @@ function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Login Data:", formData);
 
     axios.post("http://localhost:3001/login", formData)
       .then(result => {
-        console.log("Login success:", result.data);
-        navigate("/"); 
+        if (result.data.token) {
+          localStorage.setItem("token", result.data.token);
+          navigate("/home");
+        } else {
+          alert("Login failed");
+        }
       })
       .catch(err => {
-        console.error("Login error:", err);
-        alert("Invalid email or password!");
+        alert(err.response?.data?.error || "Invalid email or password!");
       });
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center bg-secondary vh-100">
-      <div className="bg-white p-4 rounded w-50 shadow">
-        <h2 className="text-center mb-4">Purbachal Society - Login</h2>
+    <div className="auth-container">
+      <div className="auth-box">
+        <h2>Login</h2>
         <form onSubmit={handleSubmit}>
-          {/* Email */}
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label fw-bold">
-              Email
-            </label>
-            <input
-              type="email"
-              className="form-control rounded-0"
-              id="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label fw-bold">
-              Password
-            </label>
-            <input
-              type="password"
-              className="form-control rounded-0"
-              id="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button type="submit" className="btn btn-primary w-100 rounded-0">
-            Login
-          </button>
-
-          {/* Don't have account */}
-          <p className="mt-3 text-center">
-            Don’t have an account? <a href="/register">Register here</a>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit">Login</button>
+          <p>
+            Don’t have an account? <a href="/register">Signup</a>
           </p>
         </form>
       </div>
