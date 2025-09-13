@@ -30,16 +30,8 @@ export default function SocietyRules() {
 
   useEffect(() => {
     const fetchRules = async () => {
-      if (!isMember) {
-        setLoading(false);
-        return;
-      }
-      
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3001/society-rules', {
-          headers: { Authorization: token }
-        });
+        const response = await axios.get('http://localhost:3001/society-rules');
         setRules(response.data.rules || []);
       } catch (err) {
         setError('Failed to load society rules');
@@ -51,7 +43,7 @@ export default function SocietyRules() {
     };
 
     fetchRules();
-  }, [isMember]);
+  }, []);
 
   const handleAddRule = async (e) => {
     e.preventDefault();
@@ -144,21 +136,7 @@ export default function SocietyRules() {
     return icons[category] || '📄';
   };
 
-  if (!isMember) {
-    return (
-      <div className="main-content">
-        <div className="dashboard-header">
-          <h1>Society Rules & Regulations</h1>
-        </div>
-        <div className="card">
-          <h3>Access Restricted</h3>
-          <p style={{ color: '#666', fontStyle: 'italic' }}>
-            Society rules and regulations are only available to active members. Please apply for membership to access community guidelines.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Remove the access restriction - allow all logged-in users to view rules
 
   if (loading) {
     return (

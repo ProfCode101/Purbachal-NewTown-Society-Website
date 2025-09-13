@@ -5,21 +5,21 @@ import axios from 'axios';
 import './Home.css';
 
 export default function Members() {
-  const { isMember } = useAuth();
+  const { isMember, isAdmin } = useAuth();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchMembers = async () => {
-      if (!isMember) {
+      if (!isMember && !isAdmin) {
         setLoading(false);
         return;
       }
       
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3001/admin/users', {
+        const response = await axios.get('http://localhost:3001/members', {
           headers: { Authorization: token }
         });
         setMembers(response.data.users || []);
@@ -33,7 +33,7 @@ export default function Members() {
     };
 
     fetchMembers();
-  }, [isMember]);
+  }, [isMember, isAdmin]);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -54,7 +54,7 @@ export default function Members() {
     }
   };
 
-  if (!isMember) {
+  if (!isMember && !isAdmin) {
     return (
       <div className="main-content">
         <div className="dashboard-header">
@@ -63,7 +63,7 @@ export default function Members() {
         <div className="card">
           <h3>Access Restricted</h3>
           <p style={{ color: '#666', fontStyle: 'italic' }}>
-            The members directory is only available to active members. Please apply for membership to access the community member list.
+            The members directory is only available to active members and administrators. Please apply for membership to access the community member list.
           </p>
         </div>
       </div>

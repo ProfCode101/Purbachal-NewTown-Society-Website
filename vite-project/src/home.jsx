@@ -14,10 +14,7 @@ function Home() {
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3001/notices", {
-          headers: { Authorization: token }
-        });
+        const response = await axios.get("http://localhost:3001/notices");
         setNotices(response.data.notices || []);
       } catch (err) {
         console.error("Failed to fetch notices:", err);
@@ -26,12 +23,8 @@ function Home() {
       }
     };
 
-    if (user && isMember) {
-      fetchNotices();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
+    fetchNotices();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -68,37 +61,28 @@ function Home() {
           </div>
         </div>
 
-        {user?.role !== 'visitor' ? (
-          <div className="card notice-board">
-            <h3>Notice Board</h3>
-            {loading ? (
-              <p>Loading notices...</p>
-            ) : notices.length > 0 ? (
-              <ul>
-                {notices.map(notice => (
-                  <li key={notice.id}>
-                    <strong>{notice.title}</strong>
-                    <br />
-                    {notice.body}
-                    <br />
-                    <small style={{ color: '#666' }}>
-                      {'Posted At: '}{new Date(notice.createdAt).toLocaleDateString()}
-                    </small>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No notices posted yet.</p>
-            )}
-          </div>
-        ) : (
-          <div className="card notice-board">
-            <h3>Notice Board</h3>
-            <p style={{ color: '#666', fontStyle: 'italic' }}>
-              Notices are only available to active members. Please apply for membership to access community notices and updates.
-            </p>
-          </div>
-        )}
+        <div className="card notice-board">
+          <h3>Notice Board</h3>
+          {loading ? (
+            <p>Loading notices...</p>
+          ) : notices.length > 0 ? (
+            <ul>
+              {notices.map(notice => (
+                <li key={notice.id}>
+                  <strong>{notice.title}</strong>
+                  <br />
+                  {notice.body}
+                  <br />
+                  <small style={{ color: '#666' }}>
+                    {'Posted At: '}{new Date(notice.createdAt).toLocaleDateString()}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No notices posted yet.</p>
+          )}
+        </div>
 
         <div className="card">
           <h3>Membership Status</h3>

@@ -89,10 +89,20 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getMembers = async (req, res) => {
+  try {
+    const users = await User.find({}, 'name email role membershipStatus plotNumber createdAt');
+    res.json({ users });
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = { 
   applyForMembership, 
   approveMembership, 
   removeMember, 
   declineMembership, 
-  getUsers 
+  getUsers,
+  getMembers
 };
