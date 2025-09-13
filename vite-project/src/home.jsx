@@ -1,14 +1,42 @@
-import React from "react";
-import { FaHome, FaInfoCircle, FaUsers, FaCalendarAlt, FaEnvelope } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { FaHome, FaInfoCircle, FaUsers, FaCalendarAlt, FaEnvelope, FaGavel } from "react-icons/fa";
 import "./Home.css";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
+import axios from "axios";
 
 function Home() {
-    const navigate = useNavigate();
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
+  const navigate = useNavigate();
+  const { user, logout, isAdmin, isMember } = useAuth();
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3001/notices", {
+          headers: { Authorization: token }
+        });
+        setNotices(response.data.notices || []);
+      } catch (err) {
+        console.error("Failed to fetch notices:", err);
+      } finally {
+        setLoading(false);
+      }
     };
+
+    if (user && isMember) {
+      fetchNotices();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="home-container">
@@ -20,49 +48,92 @@ function Home() {
           <li><a href="/about"><FaInfoCircle /> About</a></li>
           <li><a href="/members"><FaUsers /> Members</a></li>
           <li><a href="/events"><FaCalendarAlt /> Events</a></li>
+          <li><a href="/society-rules"><FaGavel /> Society Rules</a></li>
           <li><a href="/contact"><FaEnvelope /> Contact</a></li>
+          {isAdmin && (
+            <li><a href="/admin">Admin</a></li>
+          )}
         </ul>
-        <button onClick={handleLogout} className="btn btn-danger mt-3">
-           LOGOUT
+        <button onClick={handleLogout} className="logout-btn">
+          LOGOUT
         </button>
-        
       </div>
-
 
       {/* Main content */}
       <div className="main-content">
-        {/* Dashboard Header */}
         <div className="dashboard-header">
-          <h1>Welcome to Purbachal Society</h1>
-          <p>Logged in as: <b>Member</b></p>
+          <h1>Welcome to Purbachal NewTown Society</h1>
+          <div className="user-role">
+            {user?.role || 'visitor'}
+          </div>
         </div>
 
-        {/* Notice Board */}
-        <div className="card notice-board">
-          <h3>Notice Board</h3>
-          <ul>
-            <li>Annual General Meeting on 15th September</li>
-            <li>Maintenance fees due by end of the month</li>
-            <li>Playground renovation work starts next week</li>
-          </ul>
-        </div>
+        {user?.role !== 'visitor' ? (
+          <div className="card notice-board">
+            <h3>Notice Board</h3>
+            {loading ? (
+              <p>Loading notices...</p>
+            ) : notices.length > 0 ? (
+              <ul>
+                {notices.map(notice => (
+                  <li key={notice.id}>
+                    <strong>{notice.title}</strong>
+                    <br />
+                    {notice.body}
+                    <br />
+                    <small style={{ color: '#666' }}>
+                      {'Posted At: '}{new Date(notice.createdAt).toLocaleDateString()}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No notices posted yet.</p>
+            )}
+          </div>
+        ) : (
+          <div className="card notice-board">
+            <h3>Notice Board</h3>
+            <p style={{ color: '#666', fontStyle: 'italic' }}>
+              Notices are only available to active members. Please apply for membership to access community notices and updates.
+            </p>
+          </div>
+        )}
 
-
-        {/* Membership Status */}
         <div className="card">
           <h3>Membership Status</h3>
-          <p className="status">✅ Active Member</p>
-          <p>Valid until: 31st December 2025</p>
+          {user ? (
+            <>
+              <div className="status">
+                <span className={`status-badge ${
+                  user.membershipStatus === 'active' ? 'status-active' :
+                  user.membershipStatus === 'pending' ? 'status-pending' :
+                  user.membershipStatus === 'none' ? 'status-none' :
+                  'status-removed'
+                }`}>
+                  {user.membershipStatus === 'active' && 'Active Member'}
+                  {user.membershipStatus === 'pending' && 'Pending Approval'}
+                  {user.membershipStatus === 'none' && 'Not a Member'}
+                  {user.membershipStatus === 'removed' && 'Membership Removed'}
+                </span>
+              </div>
+              <p>Role: <b>{user.role}</b></p>
+              {user.membershipStatus === 'active' && (
+                <p>Valid until: 31st December 2025</p>
+              )}
+            </>
+          ) : (
+            <p>Loading membership status...</p>
+          )}
         </div>
 
-        {/* Quick Links */}
         <div className="card">
           <h3>Quick Links</h3>
           <div className="quick-links">
-            <div className="link-card">Society Rules</div>
+            <div className="link-card" onClick={() => navigate('/society-rules')}>Society Rules</div>
             <div className="link-card">Payment Portal</div>
-            <div className="link-card">Events Calendar</div>
-            <div className="link-card">Gallery</div>
+            <div className="link-card" onClick={() => navigate('/events')}>Events Calendar</div>
+            <div className="link-card" onClick={() => navigate('/apply-membership')}>Membership Form</div>
           </div>
         </div>
       </div>
@@ -71,4 +142,3 @@ function Home() {
 }
 
 export default Home;
-
